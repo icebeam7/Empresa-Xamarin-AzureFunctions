@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Empresa_Xamarin_AzureFunctions.Paginas.PaginaAgregarEmpleado">
+    <ContentPage.Content>
+        <StackLayout Margin="10">
+            <Entry x:Name="txtID" Placeholder="ID" WidthRequest="100" Margin="10" HorizontalOptions="StartAndExpand"/>
+            <Entry x:Name="txtNombre" Placeholder="Nombre" WidthRequest="300" Margin="10" HorizontalOptions="StartAndExpand"/>
+            <Entry x:Name="txtDepartamento" Placeholder="Departamento" WidthRequest="300" Margin="10" HorizontalOptions="StartAndExpand"/>
+
+            <StackLayout Orientation="Horizontal" Margin="10">
+                <Label Text="Destino: " Margin="5" VerticalOptions="CenterAndExpand"/>
+                <Button x:Name="btnGoogleDrive" Text="Google Drive" Clicked="btnAgregarEmpleado_Clicked" Margin="5"/>
+                <Button x:Name="btnTableStorage" Text="Table Storage" Clicked="btnAgregarEmpleado_Clicked" Margin="5"/>
+            </StackLayout>
+
+            <Label x:Name="lblResultado" Margin="10" FontSize="Large"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

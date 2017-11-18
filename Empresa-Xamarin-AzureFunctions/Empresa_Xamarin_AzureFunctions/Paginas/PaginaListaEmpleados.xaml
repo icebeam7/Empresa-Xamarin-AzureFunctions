@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Empresa_Xamarin_AzureFunctions.Paginas.PaginaListaEmpleados">
+    <ContentPage.Content>
+        <StackLayout>
+            <StackLayout Orientation="Horizontal" Margin="10">
+                <Label Text="Origen: " Margin="5" VerticalOptions="CenterAndExpand"/>
+                <Button x:Name="btnGoogleDrive" Text="Google Drive" Clicked="btnObtenerEmpleados_Clicked" Margin="5"/>
+                <Button x:Name="btnTableStorage" Text="Table Storage" Clicked="btnObtenerEmpleados_Clicked" Margin="5"/>
+            </StackLayout>
+
+            <ListView x:Name="lsvEmpleados">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextCell Text="{Binding Nombre}" TextColor="Blue"
+                                  Detail="{Binding Departamento}" DetailColor="Green"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Button x:Name="btnAgregar" Text="Agregar empleado" Clicked="btnAgregar_Clicked" Margin="5" HorizontalOptions="Center"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

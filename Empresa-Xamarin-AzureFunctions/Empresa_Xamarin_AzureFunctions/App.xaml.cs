@@ -13,7 +13,7 @@ namespace Empresa_Xamarin_AzureFunctions
         {
             InitializeComponent();
 
-            MainPage = new Empresa_Xamarin_AzureFunctions.MainPage();
+            MainPage = new NavigationPage(new Paginas.PaginaListaEmpleados());
         }
 
         protected override void OnStart()
