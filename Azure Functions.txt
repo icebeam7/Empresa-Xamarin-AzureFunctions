@@ -132,3 +132,141 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQuery
     return response;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+// obtener-empleados-depto-google-drive
+
+#r "Microsoft.Azure.ApiHub.Sdk" 
+#r "Newtonsoft.Json"
+
+using System;
+using System.Net;
+using Microsoft.Azure.ApiHub;
+using System.Text;
+using Newtonsoft.Json;
+
+public class Empleado
+{
+    public string ID { get; set; }
+    public string Nombre { get; set; }
+    public string Departamento { get; set; }
+}
+
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, ITable<Empleado> inputTable, TraceWriter log)
+{
+    var depto = (req.GetQueryNameValuePairs()
+                    .FirstOrDefault(q => string.Compare(q.Key, "depto", true) == 0)
+                    .Value);
+
+    ContinuationToken continuationToken = null;
+    var listaEmpleados = new List<Empleado>();
+    
+    do
+    {
+        var segment = await inputTable.ListEntitiesAsync(continuationToken: continuationToken);
+        
+        foreach(var item in segment.Items)
+        {
+            if (item.Departamento == depto)
+                listaEmpleados.Add(item);
+        }
+
+        continuationToken = segment.ContinuationToken;
+    }while (continuationToken != null);
+
+    var json = JsonConvert.SerializeObject(listaEmpleados);
+    var response = new HttpResponseMessage(HttpStatusCode.OK);
+    response.Content = new StringContent(json, Encoding.UTF8, "application/json");
+    return response;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+// obtener-empleados-depto-table-storage
+
+#r "Microsoft.WindowsAzure.Storage"
+#r "Newtonsoft.Json"
+
+using System.Net;
+using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json;
+using System.Text;
+using System;
+
+public class Empleado : TableEntity
+{
+    public string ID { get; set; }
+    public string Nombre { get; set; }
+    public string Departamento { get; set; }
+}
+
+public static string Reemplazar(string cadena)
+{
+    return cadena.Replace('á', 'a')
+                .Replace('é', 'e')
+                .Replace('í', 'i');
+}
+
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, IQueryable<Empleado> inputTable, TraceWriter log)
+{
+    string depto = req.GetQueryNameValuePairs()
+        .FirstOrDefault(q => string.Compare(q.Key, "depto", true) == 0)
+        .Value;
+
+    depto = Reemplazar(depto);
+
+    // Select emp.* from Empleado emp
+    //var query = from emp in inputTable where emp.Departamento == depto select emp;
+    var query = from emp in inputTable where emp.PartitionKey == depto select emp;
+    var listaEmpleados = query.ToList();
+
+    var json = JsonConvert.SerializeObject(listaEmpleados);
+    var response = new HttpResponseMessage(HttpStatusCode.OK);
+    response.Content = new StringContent(json, Encoding.UTF8, "application/json");
+    return response;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+// insertar-empleados-de_google-a_table
+
+#r "Microsoft.Azure.ApiHub.Sdk"
+#r "Microsoft.WindowsAzure.Storage"
+
+using System.Net;
+using System.Net.Http.Headers;
+using Microsoft.Azure.ApiHub;
+using Microsoft.WindowsAzure.Storage.Table;
+
+public class Empleado : TableEntity
+{
+    public string ID { get; set; }
+    public string Nombre { get; set; }
+    public string Departamento { get; set; }
+}
+
+public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, 
+        ITable<Empleado> inputTable,
+        ICollector<Empleado> outputTable,
+        TraceWriter log)
+{
+    ContinuationToken token = null;
+    var listaEmpleados = new List<Empleado>();
+
+    do{
+        var pagina = await inputTable.ListEntitiesAsync(continuationToken: token);
+        listaEmpleados.AddRange(pagina.Items.ToList());
+        token = pagina.ContinuationToken;
+    }while(token != null);
+
+    foreach(var emp in listaEmpleados)
+    {
+        emp.RowKey = Guid.NewGuid().ToString();
+        emp.PartitionKey = emp.Departamento;
+        outputTable.Add(emp);
+        log.Info($"{emp.Nombre} - {emp.Departamento} ha sido agregado");
+    }
+
+    var respuesta = new HttpResponseMessage(HttpStatusCode.OK);
+    respuesta.Content = new StringContent("Datos insertados desde Google Drive a Table Storage");
+    respuesta.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+    return respuesta;
+}

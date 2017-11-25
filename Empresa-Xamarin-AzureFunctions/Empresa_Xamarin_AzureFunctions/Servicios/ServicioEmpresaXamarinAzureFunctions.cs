@@ -35,13 +35,34 @@ namespace Empresa_Xamarin_AzureFunctions.Servicios
             }
         }
 
-        public async static Task<List<Empleado>> ObtenerEmpleados(string origen)
+        public async static Task<List<Empleado>> ObtenerEmpleados(string origen, string depto)
         {
             try
             {
                 var url = (origen == "Google")
-                    ? Constantes.FunctionObtenerEmpleadosGoogleDrive
-                    : Constantes.FunctionObtenerEmpleadosTableStorage;
+                    ? (string.IsNullOrWhiteSpace(depto))
+                        ? Constantes.FunctionObtenerEmpleadosGoogleDrive
+                        : Constantes.FunctionObtenerEmpleadosDeptoGoogleDrive + depto
+                    : (string.IsNullOrWhiteSpace(depto))
+                        ? Constantes.FunctionObtenerEmpleadosTableStorage
+                        : Constantes.FunctionObtenerEmpleadosDeptoTableStorage + depto;
+
+                /*var url = "";
+
+                if (origen == "Google")
+                {
+                    if (string.IsNullOrWhiteSpace(depto))
+                        url = Constantes.FunctionObtenerEmpleadosGoogleDrive;
+                    else
+                        url = Constantes.FunctionObtenerEmpleadosDeptoGoogleDrive + depto;
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(depto))
+                        url = Constantes.FunctionObtenerEmpleadosTableStorage;
+                    else
+                        url = Constantes.FunctionObtenerEmpleadosDeptoTableStorage + depto;
+                }*/
 
                 using (var cliente = new HttpClient())
                 {
@@ -52,6 +73,24 @@ namespace Empresa_Xamarin_AzureFunctions.Servicios
             catch(Exception ex)
             {
                 return null;
+            }
+        }
+
+        public async static Task<string> Insertar_DeGoogle_ATable()
+        {
+            try
+            {
+                var url = Constantes.FunctionInsertarEmpleados_DeGoogle_ATable;
+
+                using (var cliente = new HttpClient())
+                {
+                    var post = await cliente.PostAsync(url, null);
+                    return await post.Content.ReadAsStringAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                return $"Error: {ex.Message}";
             }
         }
     }

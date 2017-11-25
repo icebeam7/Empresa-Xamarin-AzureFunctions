@@ -4,11 +4,15 @@
              x:Class="Empresa_Xamarin_AzureFunctions.Paginas.PaginaListaEmpleados">
     <ContentPage.Content>
         <StackLayout>
+            <SearchBar x:Name="txtBusqueda" Placeholder="Departamento" Margin="10" WidthRequest="200" BackgroundColor="Orange" />
+
             <StackLayout Orientation="Horizontal" Margin="10">
                 <Label Text="Origen: " Margin="5" VerticalOptions="CenterAndExpand"/>
                 <Button x:Name="btnGoogleDrive" Text="Google Drive" Clicked="btnObtenerEmpleados_Clicked" Margin="5"/>
                 <Button x:Name="btnTableStorage" Text="Table Storage" Clicked="btnObtenerEmpleados_Clicked" Margin="5"/>
             </StackLayout>
+
+            <ActivityIndicator x:Name="indicador" IsEnabled="False" IsRunning="False" IsVisible="False"/>
 
             <ListView x:Name="lsvEmpleados">
                 <ListView.ItemTemplate>
@@ -19,6 +23,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
+            <Button x:Name="btnInsertarGoogle" Text="Insertar empleados de Google a Table" Clicked="btnInsertarGoogle_Clicked" Margin="5" HorizontalOptions="Center"/>
             <Button x:Name="btnAgregar" Text="Agregar empleado" Clicked="btnAgregar_Clicked" Margin="5" HorizontalOptions="Center"/>
         </StackLayout>
     </ContentPage.Content>
